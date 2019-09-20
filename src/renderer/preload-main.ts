@@ -8,7 +8,6 @@ import './app-bridge';
 import DownloadManager from './components/download-manager';
 import NetworkError from './components/network-error';
 import SnackBar from './components/snack-bar';
-import WindowsTitleBar from './components/windows-title-bar';
 import { SSFApi } from './ssf-api';
 
 interface ISSFWindow extends Window {
@@ -75,17 +74,9 @@ const monitorMemory = (time)  => {
 };
 
 // When the window is completely loaded
-ipcRenderer.on('page-load', (_event, { locale, resources, enableCustomTitleBar, isMainWindow }) => {
+ipcRenderer.on('page-load', (_event, { locale, resources, isMainWindow }) => {
 
     i18n.setResource(locale, resources);
-
-    if (enableCustomTitleBar) {
-        // injects custom title bar
-        const element = React.createElement(WindowsTitleBar);
-        const div = document.createElement( 'div' );
-        document.body.appendChild(div);
-        ReactDOM.render(element, div);
-    }
 
     webFrame.setSpellCheckProvider('en-US', {
         spellCheck(words, callback) {

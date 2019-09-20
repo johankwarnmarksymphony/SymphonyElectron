@@ -9,6 +9,7 @@ import NotificationComp from './components/notification-comp';
 import NotificationSettings from './components/notification-settings';
 import ScreenPicker from './components/screen-picker';
 import ScreenSharingIndicator from './components/screen-sharing-indicator';
+import WindowsTitleBar from './components/windows-title-bar';
 
 const enum components {
     aboutApp = 'about-app',
@@ -17,6 +18,7 @@ const enum components {
     basicAuth = 'basic-auth',
     notification = 'notification-comp',
     notificationSettings = 'notification-settings',
+    titleBar = 'title-bar',
 }
 
 const loadStyle = (style) => {
@@ -60,6 +62,10 @@ const load = () => {
         case components.notificationSettings:
             loadStyle(components.notificationSettings);
             component = NotificationSettings;
+            break;
+        case components.titleBar:
+            loadStyle(components.titleBar);
+            component = WindowsTitleBar;
             break;
     }
     const element = React.createElement(component);

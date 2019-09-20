@@ -8,7 +8,7 @@ import { apiName, WindowTypes } from '../common/api-interface';
 import { isDevEnv, isMac, isWindowsOS } from '../common/env';
 import { i18n, LocaleType } from '../common/i18n';
 import { logger } from '../common/logger';
-import { getCommandLineArgs, getGuid } from '../common/utils';
+import { getCommandLineArgs, getGuid, throttle } from '../common/utils';
 import { notification } from '../renderer/notification';
 import { AppMenu } from './app-menu';
 import { handleChildWindow } from './child-window-handler';
@@ -43,7 +43,7 @@ export interface ICustomBrowserWindow extends Electron.BrowserWindow {
 const DEFAULT_WIDTH: number = 900;
 const DEFAULT_HEIGHT: number = 900;
 
-const {devToolsEnabled} = config.getGlobalConfigFields(['devToolsEnabled']);
+const { devToolsEnabled } = config.getGlobalConfigFields([ 'devToolsEnabled' ]);
 
 export class WindowHandler {
 
@@ -81,6 +81,7 @@ export class WindowHandler {
 
     private loadFailError: string | undefined;
     private mainWindow: ICustomBrowserWindow | null = null;
+    private titleBarWindow: ICustomBrowserWindow | null = null;
     private aboutAppWindow: Electron.BrowserWindow | null = null;
     private screenPickerWindow: Electron.BrowserWindow | null = null;
     private screenSharingIndicatorWindow: Electron.BrowserWindow | null = null;
@@ -90,8 +91,8 @@ export class WindowHandler {
     constructor(opts?: Electron.BrowserViewConstructorOptions) {
         // Use these variables only on initial setup
         this.config = config.getConfigFields([ 'isCustomTitleBar', 'mainWinPos', 'minimizeOnClose', 'notificationSettings', 'alwaysOnTop', 'locale' ]);
-        this.globalConfig = config.getGlobalConfigFields(['url', 'contextIsolation', 'customFlags']);
-        const {url, contextIsolation, customFlags}: IConfig = this.globalConfig;
+        this.globalConfig = config.getGlobalConfigFields([ 'url', 'contextIsolation', 'customFlags' ]);
+        const { url, contextIsolation, customFlags }: IConfig = this.globalConfig;
 
         this.windows = {};
         this.contextIsolation = contextIsolation || false;
@@ -117,9 +118,9 @@ export class WindowHandler {
         i18n.setLocale(locale);
 
         try {
-            const extra = {podUrl: url, process: 'main'};
-            const defaultOpts = {uploadToServer: false, companyName: 'Symphony', submitURL: ''};
-            crashReporter.start({...defaultOpts, extra});
+            const extra = { podUrl: url, process: 'main' };
+            const defaultOpts = { uploadToServer: false, companyName: 'Symphony', submitURL: '' };
+            crashReporter.start({ ...defaultOpts, extra });
         } catch (e) {
             throw new Error('failed to init crash report');
         }
@@ -140,7 +141,7 @@ export class WindowHandler {
             ...this.windowOpts, ...getBounds(this.config.mainWinPos, DEFAULT_WIDTH, DEFAULT_HEIGHT),
         }) as ICustomBrowserWindow;
         this.mainWindow.winName = apiName.mainWindowName;
-        const {isFullScreen, isMaximized} = this.config.mainWinPos ? this.config.mainWinPos : {isFullScreen: false, isMaximized: false};
+        const { isFullScreen, isMaximized } = this.config.mainWinPos ? this.config.mainWinPos : { isFullScreen: false, isMaximized: false };
         if (isMaximized) {
             this.mainWindow.maximize();
             logger.info(`window-handler: window is maximized!`);
@@ -188,7 +189,7 @@ export class WindowHandler {
                 isMainWindow: true,
             });
             this.appMenu = new AppMenu();
-            const {permissions} = config.getGlobalConfigFields(['permissions']);
+            const { permissions } = config.getGlobalConfigFields([ 'permissions' ]);
             this.mainWindow.webContents.send('is-screen-share-enabled', permissions.media);
         });
 
@@ -208,7 +209,7 @@ export class WindowHandler {
                     if (href === 'data:text/html,chromewebdata' || href === 'chrome-error://chromewebdata/') {
                         if (this.mainWindow && windowExists(this.mainWindow)) {
                             this.mainWindow.webContents.insertCSS(fs.readFileSync(path.join(__dirname, '..', '/renderer/styles/network-error.css'), 'utf8').toString());
-                            this.mainWindow.webContents.send('network-error', {error: this.loadFailError});
+                            this.mainWindow.webContents.send('network-error', { error: this.loadFailError });
                             isSymphonyReachable(this.mainWindow);
                         }
                     }
@@ -228,7 +229,7 @@ export class WindowHandler {
                 type: 'error',
                 title: i18n.t('Renderer Process Crashed')(),
                 message: i18n.t('Oops! Looks like we have had a crash. Please reload or close this window.')(),
-                buttons: ['Reload', 'Close'],
+                buttons: [ 'Reload', 'Close' ],
             }, (index: number) => {
                 if (!this.mainWindow || !windowExists(this.mainWindow)) {
                     return;
@@ -248,7 +249,7 @@ export class WindowHandler {
                 return this.destroyAllWindows();
             }
 
-            const {minimizeOnClose} = config.getConfigFields(['minimizeOnClose']);
+            const { minimizeOnClose } = config.getConfigFields([ 'minimizeOnClose' ]);
             if (minimizeOnClose) {
                 event.preventDefault();
                 this.mainWindow.minimize();
@@ -301,7 +302,59 @@ export class WindowHandler {
 
         // Handle pop-outs window
         handleChildWindow(this.mainWindow.webContents);
+        this.createTitleBarWindow();
         return this.mainWindow;
+    }
+
+    /**
+     * Creates title bar window
+     */
+    public createTitleBarWindow(): void {
+        if (!this.mainWindow) {
+            return;
+        }
+
+        this.titleBarWindow = createComponentWindow('title-bar', {
+            resizable: true,
+            frame: false,
+            focusable: false,
+            minHeight: 32,
+            maxHeight: 32,
+        }) as ICustomBrowserWindow;
+        this.titleBarWindow.winName = 'titleBar';
+        const { x, y, width } = this.mainWindow.getBounds();
+        this.titleBarWindow.setBounds({ x, y: y - 32, width, height: 32 });
+        this.mainWindow.setParentWindow(this.titleBarWindow);
+
+        const throttleResize = throttle((_event, bounds) => {
+            if (!this.mainWindow || !windowExists(this.mainWindow) || !this.titleBarWindow) {
+                return;
+            }
+            const { height } = this.mainWindow.getBounds();
+            this.mainWindow.setBounds({ x: bounds.x, y: bounds.y + 32, width: bounds.width, height });
+        }, 50);
+
+        this.titleBarWindow.on('will-resize', throttleResize);
+
+        this.mainWindow.on('will-resize', (_event, bounds) => {
+            if (!this.mainWindow || !windowExists(this.mainWindow) || !this.titleBarWindow) {
+                return;
+            }
+            this.titleBarWindow.setBounds({ x: bounds.x, y: bounds.y - 32, width: bounds.width, height: bounds.height });
+        });
+
+        this.mainWindow.on('will-move', (_event, bounds) => {
+            if (!this.mainWindow || !windowExists(this.mainWindow) || !this.titleBarWindow) {
+                return;
+            }
+            this.titleBarWindow.setBounds({ x: bounds.x, y: bounds.y + 32, width: bounds.width, height: bounds.height });
+        });
+
+        this.titleBarWindow.on('maximize', () => {
+            if (!this.titleBarWindow || !windowExists(this.titleBarWindow)) {
+                return;
+            }
+        });
     }
 
     /**
@@ -337,7 +390,7 @@ export class WindowHandler {
                 break;
             case 'screen-sharing-indicator':
                 if (winKey) {
-                    const browserWindow = this.windows[winKey];
+                    const browserWindow = this.windows[ winKey ];
                     if (browserWindow && windowExists(browserWindow)) {
                         browserWindow.close();
                     }
@@ -364,7 +417,7 @@ export class WindowHandler {
                 const browserWindow = win as ICustomBrowserWindow;
                 if (browserWindow && windowExists(browserWindow)) {
                     // Closes only child windows
-                    if (browserWindow.winName !== apiName.mainWindowName && browserWindow.winName !== apiName.notificationWindowName) {
+                    if (browserWindow.winName !== apiName.mainWindowName && browserWindow.winName !== apiName.notificationWindowName && browserWindow.winName !== 'titleBar') {
                         browserWindow.close();
                     }
                 }
@@ -389,7 +442,7 @@ export class WindowHandler {
      * @param window {Electron.BrowserWindow}
      */
     public hasWindow(key: string, window: Electron.BrowserWindow): boolean {
-        const browserWindow = this.windows[key];
+        const browserWindow = this.windows[ key ];
         return browserWindow && window === browserWindow;
     }
 
@@ -482,7 +535,7 @@ export class WindowHandler {
             if (!this.screenPickerWindow || !windowExists(this.screenPickerWindow)) {
                 return;
             }
-            this.screenPickerWindow.webContents.send('screen-picker-data', {sources, id});
+            this.screenPickerWindow.webContents.send('screen-picker-data', { sources, id });
             this.addWindow(opts.winKey, this.screenPickerWindow);
         });
         ipcMain.once('screen-source-selected', (_event, source) => {
@@ -527,7 +580,7 @@ export class WindowHandler {
             if (!this.basicAuthWindow || !windowExists(this.basicAuthWindow)) {
                 return;
             }
-            this.basicAuthWindow.webContents.send('basic-auth-data', {hostname, isValidCredentials: isMultipleTries});
+            this.basicAuthWindow.webContents.send('basic-auth-data', { hostname, isValidCredentials: isMultipleTries });
         });
         const closeBasicAuth = (shouldClearSettings = true) => {
             if (shouldClearSettings) {
@@ -540,7 +593,7 @@ export class WindowHandler {
         };
 
         const login = (_event, arg) => {
-            const {username, password} = arg;
+            const { username, password } = arg;
             callback(username, password);
             closeBasicAuth(false);
         };
@@ -598,17 +651,17 @@ export class WindowHandler {
                 if (app.isReady()) {
                     screens = electron.screen.getAllDisplays();
                 }
-                const {position, display} = config.getConfigFields(['notificationSettings']).notificationSettings;
-                this.notificationSettingsWindow.webContents.send('notification-settings-data', {screens, position, display});
+                const { position, display } = config.getConfigFields([ 'notificationSettings' ]).notificationSettings;
+                this.notificationSettingsWindow.webContents.send('notification-settings-data', { screens, position, display });
             }
         });
 
         this.addWindow(opts.winKey, this.notificationSettingsWindow);
 
         ipcMain.once('notification-settings-update', async (_event, args) => {
-            const {display, position} = args;
+            const { display, position } = args;
             try {
-                await config.updateUserConfig({notificationSettings: {display, position}});
+                await config.updateUserConfig({ notificationSettings: { display, position } });
             } catch (e) {
                 logger.error(`NotificationSettings: Could not update user config file error`, e);
             }
@@ -642,7 +695,7 @@ export class WindowHandler {
     ): void {
         const indicatorScreen =
             (displayId && electron.screen.getAllDisplays().filter((d) =>
-                displayId.includes(d.id.toString()))[0]) || electron.screen.getPrimaryDisplay();
+                displayId.includes(d.id.toString()))[ 0 ]) || electron.screen.getPrimaryDisplay();
 
         const screenRect = indicatorScreen.workArea;
         // Set stream id as winKey to link stream to the window
@@ -661,7 +714,7 @@ export class WindowHandler {
                 fullscreenable: false,
             }, {
                 devTools: false,
-            }), ...{winKey: streamId},
+            }), ...{ winKey: streamId },
         };
         if (opts.width && opts.height) {
             opts = Object.assign({}, opts, {
@@ -675,7 +728,7 @@ export class WindowHandler {
             if (!this.screenSharingIndicatorWindow || !windowExists(this.screenSharingIndicatorWindow)) {
                 return;
             }
-            this.screenSharingIndicatorWindow.webContents.send('screen-sharing-indicator-data', {id, streamId});
+            this.screenSharingIndicatorWindow.webContents.send('screen-sharing-indicator-data', { id, streamId });
         });
         const stopScreenSharing = (_event, indicatorId) => {
             if (id === indicatorId) {
@@ -720,7 +773,7 @@ export class WindowHandler {
      * @param browserWindow {Electron.BrowserWindow}
      */
     public addWindow(key: string, browserWindow: Electron.BrowserWindow): void {
-        this.windows[key] = browserWindow;
+        this.windows[ key ] = browserWindow;
     }
 
     /**
@@ -729,7 +782,7 @@ export class WindowHandler {
      * @param key {string}
      */
     public removeWindow(key: string): void {
-        delete this.windows[key];
+        delete this.windows[ key ];
     }
 
     /**
@@ -789,7 +842,7 @@ export class WindowHandler {
     private destroyAllWindows(): void {
         for (const key in this.windows) {
             if (Object.prototype.hasOwnProperty.call(this.windows, key)) {
-                const winKey = this.windows[key];
+                const winKey = this.windows[ key ];
                 this.removeWindow(winKey);
             }
         }
@@ -846,7 +899,7 @@ export class WindowHandler {
             winKey: getGuid(),
         };
 
-        return {...defaultWindowOpts, ...windowOpts};
+        return { ...defaultWindowOpts, ...windowOpts };
     }
 }
 
