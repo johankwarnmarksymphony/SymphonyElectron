@@ -52,6 +52,10 @@ export default class WindowsTitleBar extends React.Component<{}, IState> {
         if (target) {
             this.observer.observe(target, { attributes: true, childList: true, subtree: true, characterData: true });
         }
+
+        setTimeout(() => {
+            this.updateTitleBar();
+        }, 10000);
     }
 
     public componentWillMount() {
@@ -254,6 +258,13 @@ export default class WindowsTitleBar extends React.Component<{}, IState> {
     private updateTitleBar(): void {
         const { isFullScreen, titleBarHeight } = this.state;
         const contentWrapper = document.getElementById('content-wrapper');
+        const railContainer = document.getElementsByClassName('ReactRail-container-2')[0] as HTMLElement;
+        const railList = document.getElementsByClassName('railList')[0] as HTMLElement;
+        if (railContainer) {
+            railContainer.style.height = isFullScreen ? '100vh' : `calc(100vh - ${titleBarHeight})`;
+        } else if (railList) {
+            railList.style.height = isFullScreen ? '100vh' : `calc(100vh - ${titleBarHeight})`;
+        }
         if (!contentWrapper) {
             document.body.style.marginTop = isFullScreen ? '0px' : titleBarHeight;
             return;
