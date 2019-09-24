@@ -181,7 +181,7 @@ export class WindowHandler {
                     const { channel } = config.getGlobalConfigFields([ 'channel' ]);
                     const channelString = (channel) ? channel + '/' : '';
                     const parsedUrl = parse(this.url);
-                    const dogfoodUrl = 'https://' + parsedUrl.hostname + '/clientproxy/' + channelString + 'index.html' + parsedUrl.search;
+                    const dogfoodUrl = 'https://' + parsedUrl.hostname + '/clientproxy/daily/' + channelString + 'index.html' + parsedUrl.search;
                     this.mainWindow.loadURL(dogfoodUrl);
 
                     this.url = this.mainWindow.webContents.getURL();
