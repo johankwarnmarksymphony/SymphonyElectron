@@ -176,13 +176,19 @@ export class WindowHandler {
             }
             this.url = this.mainWindow.webContents.getURL();
 
-            if (this.url.indexOf('x-km-csrf-token') !== -1) {
-                const { manaPath, channel } = config.getGlobalConfigFields([ 'manaPath', 'channel' ]);
-                const manaString = (manaPath) ? manaPath : 'client-bff';
+            let csrfToken;
+            try {
+                csrfToken = await this.mainWindow.webContents.executeJavaScript(`localStorage.getItem('x-km-csrf-token')`);
+            } catch (e) {
+                logger.error(e);
+            }
+            const { manaPath, channel } = config.getGlobalConfigFields([ 'manaPath', 'channel' ]);
+            const manaString = (manaPath) ? manaPath : 'client-bff';
+            const parsedUrl = parse(this.url);
+            if (this.url.indexOf(`https://${parsedUrl.hostname}/client/index.html`) !== -1) {
                 if (this.url.indexOf(manaString) === -1) {
                     const channelString = (channel) ? channel + '/' : '';
-                    const parsedUrl = parse(this.url);
-                    const dogfoodUrl = `https://${parsedUrl.hostname}/${manaString}/${channelString}index.html${parsedUrl.search}`;
+                    const dogfoodUrl = `https://${parsedUrl.hostname}/${manaString}/${channelString}index.html?x-km-csrf-token=${csrfToken}`;
                     this.mainWindow.loadURL(dogfoodUrl);
 
                     this.url = this.mainWindow.webContents.getURL();
