@@ -31,6 +31,7 @@ export interface IConfig {
     mainWinPos?: ICustomRectangle;
     locale?: string;
     channel?: string;
+    manaPath?: string;
 }
 
 export interface IPermission {

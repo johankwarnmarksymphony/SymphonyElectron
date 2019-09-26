@@ -177,11 +177,12 @@ export class WindowHandler {
             this.url = this.mainWindow.webContents.getURL();
 
             if (this.url.indexOf('x-km-csrf-token') !== -1) {
-                if (this.url.indexOf('clientproxy') === -1) {
-                    const { channel } = config.getGlobalConfigFields([ 'channel' ]);
+                const { manaPath, channel } = config.getGlobalConfigFields([ 'manaPath', 'channel' ]);
+                const manaString = (manaPath) ? manaPath : 'client-bff';
+                if (this.url.indexOf(manaString) === -1) {
                     const channelString = (channel) ? channel + '/' : '';
                     const parsedUrl = parse(this.url);
-                    const dogfoodUrl = 'https://' + parsedUrl.hostname + '/clientproxy/' + channelString + 'index.html' + parsedUrl.search;
+                    const dogfoodUrl = `https://${parsedUrl.hostname}/${manaString}/${channelString}index.html${parsedUrl.search}`;
                     this.mainWindow.loadURL(dogfoodUrl);
 
                     this.url = this.mainWindow.webContents.getURL();
