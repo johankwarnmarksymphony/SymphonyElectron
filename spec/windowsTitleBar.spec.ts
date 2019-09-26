@@ -118,7 +118,7 @@ describe('windows title bar', () => {
 
     describe('componentDidMount event', () => {
         beforeEach(() => {
-            document.body.innerHTML = `<div id="content-wrapper"></div>`;
+            document.body.innerHTML = `<div id="root"></div>`;
         });
 
         it('should call `componentDidMount` when isFullScreen', () => {

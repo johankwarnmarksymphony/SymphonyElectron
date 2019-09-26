@@ -257,7 +257,7 @@ export default class WindowsTitleBar extends React.Component<{}, IState> {
      */
     private updateTitleBar(): void {
         const { isFullScreen, titleBarHeight } = this.state;
-        const contentWrapper = document.getElementById('content-wrapper');
+        const contentWrapper = document.getElementById('root');
         const railContainer = document.getElementsByClassName('ReactRail-container-2')[0] as HTMLElement;
         const railList = document.getElementsByClassName('railList')[0] as HTMLElement;
         if (railContainer) {
