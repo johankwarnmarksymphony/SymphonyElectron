@@ -99,7 +99,7 @@ ipcMain.on(apiName.symphonyApi, (event: Electron.Event, arg: IApiArgs) => {
             break;
         case apiCmds.popupMenu: {
             const browserWin = BrowserWindow.fromWebContents(event.sender) as ICustomBrowserWindow;
-            if (browserWin && windowExists(browserWin) && browserWin.winName === apiName.mainWindowName) {
+            if (browserWin && windowExists(browserWin) && (browserWin.winName === apiName.titleBar || browserWin.winName === apiName.mainWindowName)) {
                 showPopupMenu({ window: browserWin });
             }
             break;

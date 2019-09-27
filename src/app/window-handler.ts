@@ -29,7 +29,7 @@ import {
     windowExists,
 } from './window-utils';
 
-interface ICustomBrowserWindowConstructorOpts extends Electron.BrowserWindowConstructorOptions {
+export interface ICustomBrowserWindowConstructorOpts extends Electron.BrowserWindowConstructorOptions {
     winKey: string;
 }
 
@@ -314,46 +314,68 @@ export class WindowHandler {
             return;
         }
 
+        const winKey = getGuid();
         this.titleBarWindow = createComponentWindow('title-bar', {
             resizable: true,
             frame: false,
             focusable: false,
-            minHeight: 32,
-            maxHeight: 32,
+            winKey,
         }) as ICustomBrowserWindow;
-        this.titleBarWindow.winName = 'titleBar';
-        const { x, y, width } = this.mainWindow.getBounds();
-        this.titleBarWindow.setBounds({ x, y: y - 32, width, height: 32 });
+        this.titleBarWindow.winName = apiName.titleBar;
+        const { x, y, width, height } = this.mainWindow.getBounds();
+        this.titleBarWindow.setBounds({ x, y: y - 32, width, height });
         this.mainWindow.setParentWindow(this.titleBarWindow);
 
+        this.addWindow(winKey, this.titleBarWindow);
         const throttleResize = throttle((_event, bounds) => {
-            if (!this.mainWindow || !windowExists(this.mainWindow) || !this.titleBarWindow) {
-                return;
-            }
-            const { height } = this.mainWindow.getBounds();
-            this.mainWindow.setBounds({ x: bounds.x, y: bounds.y + 32, width: bounds.width, height });
-        }, 50);
-
-        this.titleBarWindow.on('will-resize', throttleResize);
-
-        this.mainWindow.on('will-resize', (_event, bounds) => {
-            if (!this.mainWindow || !windowExists(this.mainWindow) || !this.titleBarWindow) {
+            if (!this.titleBarWindow || !windowExists(this.titleBarWindow)) {
                 return;
             }
             this.titleBarWindow.setBounds({ x: bounds.x, y: bounds.y - 32, width: bounds.width, height: bounds.height });
-        });
+        }, 200);
 
-        this.mainWindow.on('will-move', (_event, bounds) => {
-            if (!this.mainWindow || !windowExists(this.mainWindow) || !this.titleBarWindow) {
+        const throttleMove = throttle((_event, bounds) => {
+            if (!this.titleBarWindow || !windowExists(this.titleBarWindow)) {
                 return;
             }
             this.titleBarWindow.setBounds({ x: bounds.x, y: bounds.y + 32, width: bounds.width, height: bounds.height });
+        }, 200);
+
+        this.mainWindow.on('will-resize', throttleResize);
+        this.mainWindow.on('will-move', throttleMove);
+
+        this.titleBarWindow.on('leave-full-screen', () => {
+            if (!this.titleBarWindow || !windowExists(this.titleBarWindow)) {
+                return;
+            }
+            if (!this.mainWindow || !windowExists(this.mainWindow)) {
+                return;
+            }
+            this.mainWindow.setPosition(this.titleBarWindow.getPosition()[0], this.titleBarWindow.getPosition()[1]);
         });
 
         this.titleBarWindow.on('maximize', () => {
             if (!this.titleBarWindow || !windowExists(this.titleBarWindow)) {
                 return;
             }
+            if (!this.mainWindow || !windowExists(this.mainWindow)) {
+                return;
+            }
+            const titleBarBounds = this.titleBarWindow.getBounds();
+            this.mainWindow.setBounds({ x: titleBarBounds.x, y: titleBarBounds.y, width: titleBarBounds.width, height: titleBarBounds.height - 32 });
+            this.mainWindow.setPosition(titleBarBounds.x, titleBarBounds.y + 32, true);
+        });
+
+        this.titleBarWindow.on('unmaximize', () => {
+            if (!this.titleBarWindow || !windowExists(this.titleBarWindow)) {
+                return;
+            }
+            if (!this.mainWindow || !windowExists(this.mainWindow)) {
+                return;
+            }
+            const titleBarBounds = this.titleBarWindow.getBounds();
+            this.mainWindow.setBounds({ x: titleBarBounds.x, y: titleBarBounds.y, width: titleBarBounds.width, height: titleBarBounds.height - 32 });
+            this.mainWindow.setPosition(titleBarBounds.x, titleBarBounds.y + 32, true);
         });
     }
 
@@ -417,7 +439,7 @@ export class WindowHandler {
                 const browserWindow = win as ICustomBrowserWindow;
                 if (browserWindow && windowExists(browserWindow)) {
                     // Closes only child windows
-                    if (browserWindow.winName !== apiName.mainWindowName && browserWindow.winName !== apiName.notificationWindowName && browserWindow.winName !== 'titleBar') {
+                    if (browserWindow.winName !== apiName.mainWindowName && browserWindow.winName !== apiName.notificationWindowName && browserWindow.winName !== apiName.titleBar) {
                         browserWindow.close();
                     }
                 }

@@ -13,7 +13,7 @@ import { getGuid } from '../common/utils';
 import { whitelistHandler } from '../common/whitelist-handler';
 import { config, ICustomRectangle } from './config-handler';
 import { screenSnippet } from './screen-snippet-handler';
-import { ICustomBrowserWindow, windowHandler } from './window-handler';
+import { ICustomBrowserWindow, ICustomBrowserWindowConstructorOpts, windowHandler } from './window-handler';
 
 interface IStyles {
     name: styleNames;
@@ -103,7 +103,7 @@ export const preventWindowNavigation = (browserWindow: BrowserWindow, isPopOutWi
  */
 export const createComponentWindow = (
     componentName: string,
-    opts?: Electron.BrowserWindowConstructorOptions,
+    opts?: Electron.BrowserWindowConstructorOptions | ICustomBrowserWindowConstructorOpts,
     shouldFocus: boolean = true,
 ): BrowserWindow => {
 

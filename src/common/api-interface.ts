@@ -37,6 +37,7 @@ export enum apiName {
     symphonyApi = 'symphony-api',
     mainWindowName = 'main',
     notificationWindowName = 'notification-window',
+    titleBar = 'title-bar',
 }
 
 export interface IApiArgs {
