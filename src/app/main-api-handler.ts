@@ -156,6 +156,12 @@ ipcMain.on(apiName.symphonyApi, (event: Electron.Event, arg: IApiArgs) => {
         case apiCmds.minimize:
             windowHandler.minimizeWindow();
             break;
+        case apiCmds.closeMainWindow:
+            const mainWindow = windowHandler.getMainWindow();
+            if (mainWindow && windowExists(mainWindow)) {
+                mainWindow.close();
+            }
+            break;
         default:
     }
 

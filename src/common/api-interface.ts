@@ -33,6 +33,7 @@ export enum apiCmds {
     getConfigUrl = 'get-config-url',
 
     minimize = 'minimize',
+    closeMainWindow = 'close-main-window',
 }
 
 export enum apiName {

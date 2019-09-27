@@ -375,7 +375,11 @@ export class WindowHandler {
                 return;
             }
             this.mainWindow.setFullScreen(true);
-            this.mainWindow.moveTop();
+            setTimeout(() => {
+                if (this.mainWindow && windowExists(this.mainWindow)) {
+                    this.mainWindow.moveTop();
+                }
+            });
         });
 
         this.mainWindow.on('leave-full-screen', () => {
@@ -386,7 +390,11 @@ export class WindowHandler {
                 return;
             }
             this.titleBarWindow.setFullScreen(false);
-            this.mainWindow.moveTop();
+            setTimeout(() => {
+                if (this.mainWindow && windowExists(this.mainWindow)) {
+                    this.mainWindow.moveTop();
+                }
+            });
         });
 
         this.titleBarWindow.on('maximize', () => {
@@ -412,7 +420,11 @@ export class WindowHandler {
             const titleBarBounds = this.titleBarWindow.getBounds();
             this.mainWindow.setBounds({ x: titleBarBounds.x, y: titleBarBounds.y, width: titleBarBounds.width, height: titleBarBounds.height - 32 });
             this.mainWindow.setPosition(titleBarBounds.x, titleBarBounds.y + 32, true);
-            this.mainWindow.moveTop();
+            setTimeout(() => {
+                if (this.mainWindow && windowExists(this.mainWindow)) {
+                    this.mainWindow.moveTop();
+                }
+            });
         });
 
         this.mainWindow.on('minimize', () => {

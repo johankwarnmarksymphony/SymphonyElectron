@@ -60,15 +60,17 @@ describe('windows title bar', () => {
     });
 
     it('should call `close` correctly', () => {
-        const fnLabel = 'close';
         const titleLabel = 'Close';
         const wrapper = shallow(React.createElement(WindowsTitleBar));
         const customSelector = `button.title-bar-button[title="${titleLabel}"]`;
-        const instance: any = wrapper.instance();
-        const window = instance.window;
-        const spy = jest.spyOn(window, fnLabel);
         wrapper.find(customSelector).simulate('click');
-        expect(spy).toBeCalled();
+        const symphonyApiLabel = 'symphony-api';
+        const expectedValue = {
+            cmd: 'close-main-window',
+        };
+        const spy = jest.spyOn(ipcRenderer, 'send');
+        wrapper.find(customSelector).simulate('click');
+        expect(spy).toBeCalledWith(symphonyApiLabel, expectedValue);
     });
 
     it('should call `minimize` correctly', () => {

@@ -172,7 +172,9 @@ export default class WindowsTitleBar extends React.Component<{}, IState> {
      */
     public close(): void {
         if (this.isValidWindow()) {
-            this.window.close();
+            ipcRenderer.send(apiName.symphonyApi, {
+                cmd: apiCmds.closeMainWindow,
+            });
         }
     }
 
