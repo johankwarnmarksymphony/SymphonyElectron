@@ -153,6 +153,9 @@ ipcMain.on(apiName.symphonyApi, (event: Electron.Event, arg: IApiArgs) => {
         case apiCmds.registerAnalyticsHandler:
             analytics.registerPreloadWindow(event.sender);
             break;
+        case apiCmds.minimize:
+            windowHandler.minimizeWindow();
+            break;
         default:
     }
 

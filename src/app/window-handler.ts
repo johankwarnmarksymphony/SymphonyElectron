@@ -176,6 +176,7 @@ export class WindowHandler {
                 logger.info(`window-handler: main window web contents destroyed already! exiting`);
                 return;
             }
+            this.mainWindow.moveTop();
             this.url = this.mainWindow.webContents.getURL();
 
             // Injects custom title bar and snack bar css into the webContents
@@ -324,34 +325,76 @@ export class WindowHandler {
         this.titleBarWindow.winName = apiName.titleBar;
         const { x, y, width, height } = this.mainWindow.getBounds();
         this.titleBarWindow.setBounds({ x, y: y - 32, width, height });
-        this.mainWindow.setParentWindow(this.titleBarWindow);
+        this.mainWindow.moveTop();
 
         this.addWindow(winKey, this.titleBarWindow);
-        const throttleResize = throttle((_event, bounds) => {
+        const throttleResizeMain = throttle((_event, bounds) => {
             if (!this.titleBarWindow || !windowExists(this.titleBarWindow)) {
                 return;
             }
             this.titleBarWindow.setBounds({ x: bounds.x, y: bounds.y - 32, width: bounds.width, height: bounds.height });
+            if (this.mainWindow && windowExists(this.mainWindow)) {
+                this.mainWindow.moveTop();
+            }
         }, 200);
 
-        const throttleMove = throttle((_event, bounds) => {
+        const throttleMoveMain = throttle((_event, bounds) => {
             if (!this.titleBarWindow || !windowExists(this.titleBarWindow)) {
                 return;
             }
             this.titleBarWindow.setBounds({ x: bounds.x, y: bounds.y + 32, width: bounds.width, height: bounds.height });
+            if (this.mainWindow && windowExists(this.mainWindow)) {
+                this.mainWindow.moveTop();
+            }
         }, 200);
 
-        this.mainWindow.on('will-resize', throttleResize);
-        this.mainWindow.on('will-move', throttleMove);
+        const throttleResizeTitle = throttle((_event, bounds) => {
+            if (!this.mainWindow || !windowExists(this.mainWindow)) {
+                return;
+            }
+            this.mainWindow.setBounds({ x: bounds.x, y: bounds.y - 32, width: bounds.width, height: bounds.height });
+            if (this.mainWindow && windowExists(this.mainWindow)) {
+                this.mainWindow.moveTop();
+            }
+        }, 200);
 
-        this.titleBarWindow.on('leave-full-screen', () => {
+        const throttleMoveTitle = throttle((_event, bounds) => {
+            if (!this.mainWindow || !windowExists(this.mainWindow)) {
+                return;
+            }
+            this.mainWindow.setBounds({ x: bounds.x, y: bounds.y + 32, width: bounds.width, height: bounds.height });
+            if (this.mainWindow && windowExists(this.mainWindow)) {
+                this.mainWindow.moveTop();
+            }
+        }, 200);
+
+        this.mainWindow.on('will-resize', throttleResizeMain);
+        this.mainWindow.on('will-move', throttleMoveMain);
+
+        this.titleBarWindow.on('will-resize', throttleResizeTitle);
+        this.titleBarWindow.on('will-move', throttleMoveTitle);
+
+        this.titleBarWindow.on('enter-full-screen', () => {
+            if (!this.mainWindow || !windowExists(this.mainWindow)) {
+                return;
+            }
+            this.mainWindow.setFullScreen(true);
+            if (this.mainWindow && windowExists(this.mainWindow)) {
+                this.mainWindow.moveTop();
+            }
+        });
+
+        this.mainWindow.on('leave-full-screen', () => {
             if (!this.titleBarWindow || !windowExists(this.titleBarWindow)) {
                 return;
             }
             if (!this.mainWindow || !windowExists(this.mainWindow)) {
                 return;
             }
-            this.mainWindow.setPosition(this.titleBarWindow.getPosition()[0], this.titleBarWindow.getPosition()[1]);
+            this.titleBarWindow.setFullScreen(false);
+            if (this.mainWindow && windowExists(this.mainWindow)) {
+                this.mainWindow.moveTop();
+            }
         });
 
         this.titleBarWindow.on('maximize', () => {
@@ -364,6 +407,9 @@ export class WindowHandler {
             const titleBarBounds = this.titleBarWindow.getBounds();
             this.mainWindow.setBounds({ x: titleBarBounds.x, y: titleBarBounds.y, width: titleBarBounds.width, height: titleBarBounds.height - 32 });
             this.mainWindow.setPosition(titleBarBounds.x, titleBarBounds.y + 32, true);
+            if (this.mainWindow && windowExists(this.mainWindow)) {
+                this.mainWindow.moveTop();
+            }
         });
 
         this.titleBarWindow.on('unmaximize', () => {
@@ -376,7 +422,42 @@ export class WindowHandler {
             const titleBarBounds = this.titleBarWindow.getBounds();
             this.mainWindow.setBounds({ x: titleBarBounds.x, y: titleBarBounds.y, width: titleBarBounds.width, height: titleBarBounds.height - 32 });
             this.mainWindow.setPosition(titleBarBounds.x, titleBarBounds.y + 32, true);
+            if (this.mainWindow && windowExists(this.mainWindow)) {
+                this.mainWindow.moveTop();
+            }
         });
+
+        this.mainWindow.on('restore', () => {
+            if (!this.titleBarWindow || !windowExists(this.titleBarWindow)) {
+                return;
+            }
+            this.titleBarWindow.showInactive();
+            if (this.mainWindow && windowExists(this.mainWindow)) {
+                this.mainWindow.moveTop();
+            }
+        });
+
+        this.mainWindow.on('focus', () => {
+            if (!this.titleBarWindow || !windowExists(this.titleBarWindow)) {
+                return;
+            }
+            this.titleBarWindow.showInactive();
+            if (this.mainWindow && windowExists(this.mainWindow)) {
+                this.mainWindow.moveTop();
+            }
+        });
+    }
+
+    /**
+     * Minimize main window and hide title bar window
+     */
+    public minimizeWindow(): void {
+        if (this.mainWindow && windowExists(this.mainWindow)) {
+            this.mainWindow.minimize();
+            if (this.titleBarWindow && windowExists(this.titleBarWindow)) {
+                this.titleBarWindow.hide();
+            }
+        }
     }
 
     /**

@@ -181,7 +181,9 @@ export default class WindowsTitleBar extends React.Component<{}, IState> {
      */
     public minimize(): void {
         if (this.isValidWindow()) {
-            this.window.minimize();
+            ipcRenderer.send(apiName.symphonyApi, {
+                cmd: apiCmds.minimize,
+            });
         }
     }
 

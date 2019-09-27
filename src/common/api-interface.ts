@@ -31,6 +31,8 @@ export enum apiCmds {
     memoryInfo = 'memory-info',
     swiftSearch = 'swift-search',
     getConfigUrl = 'get-config-url',
+
+    minimize = 'minimize',
 }
 
 export enum apiName {
