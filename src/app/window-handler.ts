@@ -398,7 +398,7 @@ export class WindowHandler {
             }
             const titleBarBounds = this.titleBarWindow.getBounds();
             this.mainWindow.setBounds({ x: titleBarBounds.x, y: titleBarBounds.y, width: titleBarBounds.width, height: titleBarBounds.height - 32 });
-            this.mainWindow.setPosition(titleBarBounds.x, titleBarBounds.y + 39, true);
+            this.mainWindow.setPosition(titleBarBounds.x, titleBarBounds.y + 38, true);
             this.mainWindow.moveTop();
         });
 
