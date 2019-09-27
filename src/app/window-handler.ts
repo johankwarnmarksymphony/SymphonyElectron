@@ -441,7 +441,7 @@ export class WindowHandler {
             if (!this.titleBarWindow || !windowExists(this.titleBarWindow)) {
                 return;
             }
-            this.titleBarWindow.showInactive();
+            this.titleBarWindow.moveTop();
             if (this.mainWindow && windowExists(this.mainWindow)) {
                 this.mainWindow.moveTop();
             }
