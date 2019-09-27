@@ -324,10 +324,12 @@ export class WindowHandler {
         }) as ICustomBrowserWindow;
         this.titleBarWindow.winName = apiName.titleBar;
         const { x, y, width, height } = this.mainWindow.getBounds();
+        // initial title bar window creation is based on main window bounds with -32px
         this.titleBarWindow.setBounds({ x, y: y - 32, width, height });
         this.mainWindow.moveTop();
 
         this.addWindow(winKey, this.titleBarWindow);
+        // When the main window is resized we also resize title bar window
         const throttleResizeMain = throttle((_event, bounds) => {
             if (!this.titleBarWindow || !windowExists(this.titleBarWindow)) {
                 return;
@@ -336,8 +338,9 @@ export class WindowHandler {
             if (this.mainWindow && windowExists(this.mainWindow)) {
                 this.mainWindow.moveTop();
             }
-        }, 200);
+        }, 10);
 
+        // When the main window is moved we also move title bar window
         const throttleMoveMain = throttle((_event, bounds) => {
             if (!this.titleBarWindow || !windowExists(this.titleBarWindow)) {
                 return;
@@ -346,23 +349,25 @@ export class WindowHandler {
             if (this.mainWindow && windowExists(this.mainWindow)) {
                 this.mainWindow.moveTop();
             }
-        }, 200);
+        }, 10);
 
+        // When the title bar is resized we also resize main window
         const throttleResizeTitle = throttle((_event, bounds) => {
             if (!this.mainWindow || !windowExists(this.mainWindow)) {
                 return;
             }
             this.mainWindow.setBounds({ x: bounds.x, y: bounds.y + 32, width: bounds.width, height: bounds.height });
             this.mainWindow.moveTop();
-        }, 200);
+        }, 10);
 
+        // When the title bar is moved we also move main window
         const throttleMoveTitle = throttle((_event, bounds) => {
             if (!this.mainWindow || !windowExists(this.mainWindow)) {
                 return;
             }
             this.mainWindow.setBounds({ x: bounds.x, y: bounds.y + 32, width: bounds.width, height: bounds.height });
             this.mainWindow.moveTop();
-        }, 200);
+        }, 10);
 
         this.mainWindow.on('will-resize', throttleResizeMain);
         this.mainWindow.on('will-move', throttleMoveMain);
@@ -405,23 +410,29 @@ export class WindowHandler {
                 return;
             }
             const titleBarBounds = this.titleBarWindow.getBounds();
+            // Update main window bounds based on title bar window bounds
             this.mainWindow.setBounds({ x: titleBarBounds.x, y: titleBarBounds.y, width: titleBarBounds.width, height: titleBarBounds.height - 32 });
+            // update position so main window will be 32px below title bar window
             this.mainWindow.setPosition(titleBarBounds.x, titleBarBounds.y + 38, true);
+            // move main window to top so that title bar's white screen dont cover up main window
             this.mainWindow.moveTop();
         });
 
         this.titleBarWindow.on('unmaximize', () => {
-            if (!this.titleBarWindow || !windowExists(this.titleBarWindow)) {
-                return;
-            }
-            if (!this.mainWindow || !windowExists(this.mainWindow)) {
-                return;
-            }
-            const titleBarBounds = this.titleBarWindow.getBounds();
-            this.mainWindow.setBounds({ x: titleBarBounds.x, y: titleBarBounds.y, width: titleBarBounds.width, height: titleBarBounds.height - 32 });
-            this.mainWindow.setPosition(titleBarBounds.x, titleBarBounds.y + 32, true);
             setTimeout(() => {
+                if (!this.titleBarWindow || !windowExists(this.titleBarWindow)) {
+                    return;
+                }
+                if (!this.mainWindow || !windowExists(this.mainWindow)) {
+                    return;
+                }
+                const titleBarBounds = this.titleBarWindow.getBounds();
+                // Update main window bounds based on title bar window bounds
+                this.mainWindow.setBounds({ x: titleBarBounds.x, y: titleBarBounds.y, width: titleBarBounds.width, height: titleBarBounds.height - 32 });
+                // update position so main window will be 32px below title bar window
+                this.mainWindow.setPosition(titleBarBounds.x, titleBarBounds.y + 32, true);
                 if (this.mainWindow && windowExists(this.mainWindow)) {
+                    // move main window to top so that title bar's white screen dont cover up main window
                     this.mainWindow.moveTop();
                 }
             });
@@ -431,6 +442,7 @@ export class WindowHandler {
             if (!this.titleBarWindow || !windowExists(this.titleBarWindow)) {
                 return;
             }
+            // when main window is minimized we hide title bar window
             this.titleBarWindow.hide();
         });
 
@@ -438,6 +450,7 @@ export class WindowHandler {
             if (!this.titleBarWindow || !windowExists(this.titleBarWindow)) {
                 return;
             }
+            // when main window is restored from minimized state we show the previously hidden title bar window
             this.titleBarWindow.show();
             if (this.mainWindow && windowExists(this.mainWindow)) {
                 this.mainWindow.moveTop();
@@ -448,6 +461,7 @@ export class WindowHandler {
             if (!this.titleBarWindow || !windowExists(this.titleBarWindow)) {
                 return;
             }
+            // when main window is focused also bring the title bar window and then main window
             this.titleBarWindow.moveTop();
             if (this.mainWindow && windowExists(this.mainWindow)) {
                 this.mainWindow.moveTop();
