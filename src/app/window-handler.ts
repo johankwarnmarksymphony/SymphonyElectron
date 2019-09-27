@@ -352,10 +352,8 @@ export class WindowHandler {
             if (!this.mainWindow || !windowExists(this.mainWindow)) {
                 return;
             }
-            this.mainWindow.setBounds({ x: bounds.x, y: bounds.y - 32, width: bounds.width, height: bounds.height });
-            if (this.mainWindow && windowExists(this.mainWindow)) {
-                this.mainWindow.moveTop();
-            }
+            this.mainWindow.setBounds({ x: bounds.x, y: bounds.y + 32, width: bounds.width, height: bounds.height });
+            this.mainWindow.moveTop();
         }, 200);
 
         const throttleMoveTitle = throttle((_event, bounds) => {
@@ -363,9 +361,7 @@ export class WindowHandler {
                 return;
             }
             this.mainWindow.setBounds({ x: bounds.x, y: bounds.y + 32, width: bounds.width, height: bounds.height });
-            if (this.mainWindow && windowExists(this.mainWindow)) {
-                this.mainWindow.moveTop();
-            }
+            this.mainWindow.moveTop();
         }, 200);
 
         this.mainWindow.on('will-resize', throttleResizeMain);
@@ -379,9 +375,7 @@ export class WindowHandler {
                 return;
             }
             this.mainWindow.setFullScreen(true);
-            if (this.mainWindow && windowExists(this.mainWindow)) {
-                this.mainWindow.moveTop();
-            }
+            this.mainWindow.moveTop();
         });
 
         this.mainWindow.on('leave-full-screen', () => {
@@ -392,9 +386,7 @@ export class WindowHandler {
                 return;
             }
             this.titleBarWindow.setFullScreen(false);
-            if (this.mainWindow && windowExists(this.mainWindow)) {
-                this.mainWindow.moveTop();
-            }
+            this.mainWindow.moveTop();
         });
 
         this.titleBarWindow.on('maximize', () => {
@@ -406,10 +398,8 @@ export class WindowHandler {
             }
             const titleBarBounds = this.titleBarWindow.getBounds();
             this.mainWindow.setBounds({ x: titleBarBounds.x, y: titleBarBounds.y, width: titleBarBounds.width, height: titleBarBounds.height - 32 });
-            this.mainWindow.setPosition(titleBarBounds.x, titleBarBounds.y + 32, true);
-            if (this.mainWindow && windowExists(this.mainWindow)) {
-                this.mainWindow.moveTop();
-            }
+            this.mainWindow.setPosition(titleBarBounds.x, titleBarBounds.y + 39, true);
+            this.mainWindow.moveTop();
         });
 
         this.titleBarWindow.on('unmaximize', () => {
@@ -422,16 +412,21 @@ export class WindowHandler {
             const titleBarBounds = this.titleBarWindow.getBounds();
             this.mainWindow.setBounds({ x: titleBarBounds.x, y: titleBarBounds.y, width: titleBarBounds.width, height: titleBarBounds.height - 32 });
             this.mainWindow.setPosition(titleBarBounds.x, titleBarBounds.y + 32, true);
-            if (this.mainWindow && windowExists(this.mainWindow)) {
-                this.mainWindow.moveTop();
+            this.mainWindow.moveTop();
+        });
+
+        this.mainWindow.on('minimize', () => {
+            if (!this.titleBarWindow || !windowExists(this.titleBarWindow)) {
+                return;
             }
+            this.titleBarWindow.hide();
         });
 
         this.mainWindow.on('restore', () => {
             if (!this.titleBarWindow || !windowExists(this.titleBarWindow)) {
                 return;
             }
-            this.titleBarWindow.showInactive();
+            this.titleBarWindow.show();
             if (this.mainWindow && windowExists(this.mainWindow)) {
                 this.mainWindow.moveTop();
             }
