@@ -84,9 +84,11 @@ ipcRenderer.on('page-load', (_event, { locale, resources, enableCustomTitleBar, 
         const div = document.createElement( 'div' );
         document.body.appendChild(div);
         ReactDOM.render(element, div);
+
+        document.body.classList.add('sda-title-bar');
     }
 
-    webFrame.setSpellCheckProvider('en-US', false,{
+    webFrame.setSpellCheckProvider('en-US', false, {
         spellCheck(text) {
             return !ipcRenderer.sendSync(apiName.symphonyApi, {
                 cmd: apiCmds.isMisspelled,
