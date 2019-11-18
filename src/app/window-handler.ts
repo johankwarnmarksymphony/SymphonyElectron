@@ -440,6 +440,12 @@ export class WindowHandler {
             return (window as ICustomBrowserWindow).winName === windowName;
         });
 
+        logger.info(`window-handler: createAboutAppWindow, selectedParentWindow: ` + JSON.stringify(selectedParentWindow));
+
+        if (selectedParentWindow) {
+            logger.info(`window-handler: createAboutAppWindow, selectedParentWindow: ` + JSON.stringify(selectedParentWindow.getBounds()));
+        }
+
         const opts: BrowserWindowConstructorOptions = this.getWindowOpts({
             width: 420,
             height: isWindowsOS ? 745 : 705,
@@ -706,6 +712,9 @@ export class WindowHandler {
 
         if (displayId !== '') {
             const displays = electron.screen.getAllDisplays();
+
+            logger.info(`window-handler: displayId: ` + displayId);
+            logger.info(`window-handler: displays: ` + JSON.stringify(displays));
 
             displays.forEach((element) => {
                 if (displayId === element.id.toString()) {
