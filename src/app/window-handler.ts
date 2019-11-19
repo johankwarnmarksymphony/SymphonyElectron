@@ -520,6 +520,8 @@ export class WindowHandler {
             this.addWindow(opts.winKey, this.screenPickerWindow);
         });
         ipcMain.once('screen-source-selected', (_event, source) => {
+            const str = JSON.stringify(source);
+            logger.info(`window-handler: screen-source-selected, source: ${str} id: ${id}!`);
             window.send('start-share' + id, source);
             if (this.screenPickerWindow && windowExists(this.screenPickerWindow)) {
                 this.screenPickerWindow.close();
