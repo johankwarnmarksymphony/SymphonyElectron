@@ -782,8 +782,8 @@ export class WindowHandler {
 
             displays.forEach((element) => {
                 if (displayId === element.id.toString()) {
+                    logger.info('window-handler: createScreenSharingIndicatorWindow element: ', element);
                     if (isWindowsOS) {
-                        logger.info(`window-handler: element:`, element);
                         const winX: string = element.bounds.x.toString();
                         const winY: string = element.bounds.y.toString();
                         this.execCmd(this.screenShareIndicatorFrameUtil, [ winX, winY ]);
