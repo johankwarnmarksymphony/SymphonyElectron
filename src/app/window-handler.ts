@@ -866,6 +866,9 @@ export class WindowHandler {
         area.x = framePositionX;
         area.y = framePositionY;
         this.screenSharingFrameWindow.setBounds(area);
+        console.warn('QQQQ this.screenSharingFrameWindow.getBounds(): ' + JSON.stringify(this.screenSharingFrameWindow.getBounds()));
+        this.screenSharingFrameWindow.setBounds(area);
+        console.warn('QQQQ2 this.screenSharingFrameWindow.getBounds(): ' + JSON.stringify(this.screenSharingFrameWindow.getBounds()));
 
         this.screenSharingFrameWindow.setIgnoreMouseEvents(true);
         this.screenSharingFrameWindow.setVisibleOnAllWorkspaces(true);
