@@ -845,8 +845,6 @@ export class WindowHandler {
         const opts: BrowserWindowConstructorOptions = this.getWindowOpts({
             width: frameWidth,
             height: frameHeight,
-            x: framePositionX,
-            y: framePositionY,
             frame: false,
             transparent: true,
             alwaysOnTop: true,
@@ -866,13 +864,22 @@ export class WindowHandler {
 
         logger.info('QQQQ framePositionX: ' + framePositionX);
         logger.info('QQQQ framePositionY: ' + framePositionY);
-        // const area = this.screenSharingFrameWindow.getBounds();
-        // area.x = framePositionX;
-        // area.y = framePositionY;
-        // this.screenSharingFrameWindow.setBounds(area);
-        // logger.info('QQQQ this.screenSharingFrameWindow.getBounds(): ' + JSON.stringify(this.screenSharingFrameWindow.getBounds()));
-        // this.screenSharingFrameWindow.setBounds(area);
-        // logger.info('QQQQ2 this.screenSharingFrameWindow.getBounds(): ' + JSON.stringify(this.screenSharingFrameWindow.getBounds()));
+        logger.info('QQQQ frameWidth    : ' + frameWidth);
+        logger.info('QQQQ frameHeight   : ' + frameHeight);
+        const area = this.screenSharingFrameWindow.getBounds();
+        logger.info('QQQQ this.screenSharingFrameWindow.getBounds(): ' + JSON.stringify(this.screenSharingFrameWindow.getBounds()));
+        area.x = framePositionX;
+        area.y = framePositionY;
+        this.screenSharingFrameWindow.setBounds(area);
+        logger.info('QQQQ2 this.screenSharingFrameWindow.getBounds(): ' + JSON.stringify(this.screenSharingFrameWindow.getBounds()));
+        this.screenSharingFrameWindow.setBounds(area);
+        logger.info('QQQQ3 this.screenSharingFrameWindow.getBounds(): ' + JSON.stringify(this.screenSharingFrameWindow.getBounds()));
+
+        const displays = electron.screen.getAllDisplays();
+
+        displays.forEach((element) => {
+            logger.info('QQQQ element: ' + JSON.stringify(element));
+        });
 
         this.screenSharingFrameWindow.setIgnoreMouseEvents(true);
         this.screenSharingFrameWindow.setVisibleOnAllWorkspaces(true);
