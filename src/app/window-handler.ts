@@ -845,6 +845,8 @@ export class WindowHandler {
         const opts: BrowserWindowConstructorOptions = this.getWindowOpts({
             width: frameWidth,
             height: frameHeight,
+            x: framePositionX,
+            y: framePositionY,
             frame: false,
             transparent: true,
             alwaysOnTop: true,
@@ -862,15 +864,15 @@ export class WindowHandler {
 
         this.screenSharingFrameWindow = createComponentWindow('screen-sharing-frame', opts);
 
-        console.warn('QQQQ framePositionX: ' + framePositionX);
-        console.warn('QQQQ framePositionY: ' + framePositionY);
-        const area = this.screenSharingFrameWindow.getBounds();
-        area.x = framePositionX;
-        area.y = framePositionY;
-        this.screenSharingFrameWindow.setBounds(area);
-        console.warn('QQQQ this.screenSharingFrameWindow.getBounds(): ' + JSON.stringify(this.screenSharingFrameWindow.getBounds()));
-        this.screenSharingFrameWindow.setBounds(area);
-        console.warn('QQQQ2 this.screenSharingFrameWindow.getBounds(): ' + JSON.stringify(this.screenSharingFrameWindow.getBounds()));
+        logger.info('QQQQ framePositionX: ' + framePositionX);
+        logger.info('QQQQ framePositionY: ' + framePositionY);
+        // const area = this.screenSharingFrameWindow.getBounds();
+        // area.x = framePositionX;
+        // area.y = framePositionY;
+        // this.screenSharingFrameWindow.setBounds(area);
+        // logger.info('QQQQ this.screenSharingFrameWindow.getBounds(): ' + JSON.stringify(this.screenSharingFrameWindow.getBounds()));
+        // this.screenSharingFrameWindow.setBounds(area);
+        // logger.info('QQQQ2 this.screenSharingFrameWindow.getBounds(): ' + JSON.stringify(this.screenSharingFrameWindow.getBounds()));
 
         this.screenSharingFrameWindow.setIgnoreMouseEvents(true);
         this.screenSharingFrameWindow.setVisibleOnAllWorkspaces(true);
