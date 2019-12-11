@@ -864,7 +864,7 @@ export class WindowHandler {
 
         console.warn('QQQQ framePositionX: ' + framePositionX);
         console.warn('QQQQ framePositionY: ' + framePositionY);
-        let area = this.screenSharingFrameWindow.getBounds();
+        const area = this.screenSharingFrameWindow.getBounds();
         area.x = framePositionX;
         area.y = framePositionY;
         this.screenSharingFrameWindow.setBounds(area);
