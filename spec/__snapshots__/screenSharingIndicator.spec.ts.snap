@@ -3,6 +3,7 @@
 exports[`screen sharing indicator should render correctly 1`] = `
 <div
   className="ScreenSharingIndicator mac"
+  onClick={[Function]}
 >
   <span
     className="text-label"
