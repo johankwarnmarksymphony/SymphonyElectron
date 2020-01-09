@@ -39,7 +39,7 @@ export default class ScreenSharingIndicator extends React.Component<{}, IState> 
         const namespace = 'ScreenSharingIndicator';
 
         return (
-            <div className={classNames('ScreenSharingIndicator', { mac: isMac })}>
+            <div className={classNames('ScreenSharingIndicator', { mac: isMac })} onClick={() => void(0)}>
                 <span className='text-label'>{(i18n.t(`You are sharing your screen on {appName}`, namespace)({ appName: remote.app.getName()})).replace(remote.app.getName(), '')}
                     <span className='text-label2'>&nbsp;{remote.app.getName()}</span>
                 </span>
