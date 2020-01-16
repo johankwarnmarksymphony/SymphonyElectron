@@ -97,6 +97,7 @@ export class AppBridge {
                 });
                 break;
             case apiCmds.activate:
+                console.warn('////////// app-bridge apiCmds.activate data: ' + data);
                 ssf.activate(data as string);
                 break;
             case apiCmds.bringToFront:

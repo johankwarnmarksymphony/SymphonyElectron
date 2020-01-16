@@ -153,6 +153,7 @@ export class SSFApi {
      */
     public activate(windowName: string) {
         if (typeof windowName === 'string') {
+            console.warn('////////// ssf-api activate windowName: ' + windowName);
             throttledActivate(windowName);
         }
     }

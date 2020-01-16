@@ -67,7 +67,7 @@ ipcMain.on(apiName.symphonyApi, (event: Electron.IpcMainEvent, arg: IApiArgs) =>
             break;
         case apiCmds.activate:
             if (typeof arg.windowName === 'string') {
-                console.warn('////// apiCmds.activate');
+                console.warn('////// apiCmds.activate  arg.windowName: ' + arg.windowName);
                 activate(arg.windowName);
             }
             break;
