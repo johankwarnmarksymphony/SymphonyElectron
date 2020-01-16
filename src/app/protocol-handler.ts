@@ -54,6 +54,7 @@ class ProtocolHandler {
         // This is needed for mac OS as it brings pop-outs to foreground
         // (if it has been previously focused) instead of main window
         if (isMac) {
+            console.warn('/////////// sendProtocol');
             activate(apiName.mainWindowName);
         }
 

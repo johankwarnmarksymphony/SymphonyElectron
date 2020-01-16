@@ -67,6 +67,7 @@ ipcMain.on(apiName.symphonyApi, (event: Electron.IpcMainEvent, arg: IApiArgs) =>
             break;
         case apiCmds.activate:
             if (typeof arg.windowName === 'string') {
+                console.warn('////// apiCmds.activate');
                 activate(arg.windowName);
             }
             break;
@@ -95,6 +96,7 @@ ipcMain.on(apiName.symphonyApi, (event: Electron.IpcMainEvent, arg: IApiArgs) =>
             if (typeof arg.reason === 'string' && arg.reason === 'notification') {
                 const { bringToFront } = config.getConfigFields([ 'bringToFront' ]);
                 if (bringToFront) {
+                    console.warn('///////// apiCmds.bringToFront');
                     activate(arg.windowName, false);
                 }
             }

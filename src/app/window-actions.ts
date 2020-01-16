@@ -112,6 +112,8 @@ export const sendInitialBoundChanges = (childWindow: BrowserWindow): void => {
  */
 export const activate = (windowName: string, shouldFocus: boolean = true): void => {
 
+    console.warn('################## activate windowName: ' + windowName + ' shouldFocus: ' + shouldFocus);
+
     // Electron-136: don't activate when the app is reloaded programmatically
     if (windowHandler.isAutoReload) {
         return;
@@ -123,6 +125,7 @@ export const activate = (windowName: string, shouldFocus: boolean = true): void 
             const window = windows[ key ];
             if (window && !window.isDestroyed() && window.winName === windowName) {
 
+                console.warn('======>> window.name: ' + window.winName + ' isMinimized: ' + window.isMinimized());
                 // Bring the window to the top without focusing
                 // Flash task bar icon in Windows for windows
                 if (!shouldFocus) {
@@ -222,6 +225,9 @@ export const monitorWindowActions = (window: BrowserWindow): void => {
     if (!window || window.isDestroyed()) {
         return;
     }
+
+    console.warn('======================>>> monitorWindowActions');
+
     const eventNames = [ 'move', 'resize' ];
     eventNames.forEach((event: string) => {
         if (window) {
