@@ -73,7 +73,7 @@ class DownloadHandler {
     public openFile(id: string): void {
         const filePath = this.getFilePath(id);
 
-        const openResponse = fs.existsSync(`${filePath}`) && shell.openItem(`${filePath}`);
+        const openResponse = fs.existsSync(`${filePath}`) && shell.openPath(`${filePath}`);
         if (openResponse) {
             return;
         }
